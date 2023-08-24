@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
-import ContentScript from "./ContentScript2";
-import React, { useEffect } from "react";
+import ContentScript from "./ContentScript";
+import React from "react";
 
 (() => {
   const container = document.createElement("div");

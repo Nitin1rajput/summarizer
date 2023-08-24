@@ -6,13 +6,13 @@ module.exports = {
   mode: "development",
   devtool: "cheap-module-source-map",
   entry: {
-    sidepanel: path.resolve("src/sidepanel"),
-    options: path.resolve("src/options"),
-    background: path.resolve("src/background"),
-    contentScript: path.resolve("src/contentScript"),
+    sidepanel: path.resolve("src", "sidepanel"),
+    options: path.resolve("src", "options"),
+    background: path.resolve("src", "background"),
+    contentScript: path.resolve("src", "contentScript"),
   },
   output: {
-    path: path.resolve(__dirname, "dist"),
+    path: path.resolve(__dirname, "build"),
     filename: "[name].js",
   },
   resolve: {
@@ -40,8 +40,8 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         {
-          from: path.resolve("src/static"),
-          to: path.resolve("dist"),
+          from: path.resolve("src", "static"),
+          to: path.resolve("build"),
         },
       ],
     }),
