@@ -12,7 +12,7 @@ module.exports = {
     contentScript: path.resolve("src", "contentScript"),
   },
   output: {
-    path: path.resolve(__dirname, "build"),
+    path: path.resolve(__dirname, "dist"),
     filename: "[name].js",
   },
   resolve: {
@@ -34,6 +34,11 @@ module.exports = {
         test: /\.css$/,
         use: ["style-loader", "css-loader"],
       },
+      {
+        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        type: "asset/resource",
+        use: "asset/resource",
+      },
     ],
   },
   plugins: [
@@ -41,7 +46,7 @@ module.exports = {
       patterns: [
         {
           from: path.resolve("src", "static"),
-          to: path.resolve("build"),
+          to: path.resolve("dist"),
         },
       ],
     }),

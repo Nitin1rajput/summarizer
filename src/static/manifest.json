@@ -4,8 +4,7 @@
   "version": "1.0.1",
   "description": "Chrome extension for summarizing web pages",
   "action": {
-    "default_title": "Click to view a popup",
-    "default_popup": "sidepanel.html"
+    "default_title": "Summarizer"
   },
   "side_panel": {
     "default_path": "sidepanel.html"

@@ -1,0 +1,26 @@
+@import url("https://fonts.googleapis.com/css2?family=Sacramento&display=swap");
+
+body {
+  font-family: "Sacramento", cursive;
+}
+
+css
+/* This will change the width and color of the scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* This will change the background of the scrollbar track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* This will change the color of the scrollbar thumb (the part that moves) */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* This will change the color of the scrollbar thumb when you hover over it */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
