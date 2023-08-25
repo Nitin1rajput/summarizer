@@ -1,15 +1,16 @@
-import { Card, Divider, Layout, Space, Typography } from "antd";
-import React, { useState } from "react";
+import React from "react";
 import { createRoot } from "react-dom/client";
+import { Divider, Layout, Typography } from "antd";
+import { Helmet } from "react-helmet";
+import { Typewriter } from "react-simple-typewriter";
+
 import ContentArea from "./components/ContentArea";
 import InputArea from "./components/InputArea";
-import { EditFilled } from "@ant-design/icons";
+
+import "./styles/index.css";
 const { Content, Footer, Header } = Layout;
 const { Text, Title } = Typography;
-import "./styles/index.css";
-const cardStyle = {
-  height: "100%",
-};
+
 const headerStyle = {
   display: "flex",
   alignItems: "center",
@@ -40,40 +41,53 @@ const footerStyle = {
 };
 function SidePanel() {
   return (
-    // <Card style={cardStyle} actions={[<EditFilled />]} title="Summarizer">
-    //   <ContentArea />
-
-    //     <InputArea />
-
-    // </Card>
-    <Layout style={{ height: "100vh" }}>
-      <Header style={headerStyle}>
-        <img
-          src="icon-16.png"
-          style={{
-            width: "40px",
-            // marginTop: "10px",
-            height: "43px",
-            margin: 0,
-          }}
+    <>
+      <Helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Orbitron:wght@800&display=swap"
+          rel="stylesheet"
         />
-        <Divider type="vertical" style={{ height: "1.9em", margin: "0 5px" }} />
-        <Text level={3}>Summarizer</Text>
-      </Header>
-      <Content style={contentStyle}>
-        <ContentArea />
-      </Content>
-      <Footer style={footerStyle}>
-        <InputArea />
-      </Footer>
-    </Layout>
+      </Helmet>
+      <Layout style={{ height: "100vh" }}>
+        <Header style={headerStyle}>
+          <img
+            src="icon-16.png"
+            style={{
+              width: "40px",
+              height: "43px",
+              margin: 0,
+              cursor: "pointer",
+            }}
+          />
+          <Divider
+            type="vertical"
+            style={{ height: "1.9em", margin: "0 5px" }}
+          />
+          <Text className="app-title" level={3}>
+            <Typewriter words={["Summarizer"]} />
+            <span className="dots">...</span>
+          </Text>
+        </Header>
+        <Content style={contentStyle}>
+          <ContentArea />
+        </Content>
+        <Footer style={footerStyle}>
+          <InputArea />
+        </Footer>
+      </Layout>
+    </>
   );
 }
-const container = document.createElement("div");
-document.body.appendChild(container);
-document.body.style.margin = 0;
-document.body.style.padding = 0;
+(() => {
+  const container = document.createElement("div");
+  if (!container) {
+    throw new Error("Container not found");
+  }
+  document.body.appendChild(container);
 
-const root = createRoot(container);
+  const root = createRoot(container);
 
-root.render(<SidePanel />);
+  root.render(<SidePanel />);
+})();
