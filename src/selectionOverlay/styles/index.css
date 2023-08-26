@@ -1,0 +1,20 @@
+/* This will change the width and color of the scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* This will change the background of the scrollbar track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* This will change the color of the scrollbar thumb (the part that moves) */
+::-webkit-scrollbar-thumb {
+  background: #e4e4e4;
+  border-radius: 12px;
+}
+
+/* This will change the color of the scrollbar thumb when you hover over it */
+::-webkit-scrollbar-thumb:hover {
+  background: #838383;
+}

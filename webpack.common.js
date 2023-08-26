@@ -1,6 +1,9 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
+const {
+  default: HtmlWebpackInjectPlugin,
+} = require("html-webpack-inject-plugin");
 
 module.exports = {
   mode: "development",
@@ -9,7 +12,7 @@ module.exports = {
     sidepanel: path.resolve("src", "sidepanel"),
     options: path.resolve("src", "options"),
     background: path.resolve("src", "background"),
-    contentScript: path.resolve("src", "contentScript"),
+    contentScript: path.resolve("src", "selectionOverlay"),
   },
   output: {
     path: path.resolve(__dirname, "dist"),

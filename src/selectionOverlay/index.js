@@ -1,6 +1,7 @@
-import { createRoot } from "react-dom/client";
-import ContentScript from "./ContentScript";
 import React from "react";
+import { createRoot } from "react-dom/client";
+
+import SelectionOverlay from "./components/SelectionOverlay";
 
 (() => {
   const container = document.createElement("div");
@@ -10,7 +11,8 @@ import React from "react";
   container.id = "content-script";
   document.body.appendChild(container);
 
-  const root = createRoot(container);
+  // container.attachShadow({ mode: "open" });
 
-  root.render(<ContentScript />);
+  const root = createRoot(container);
+  root.render(<SelectionOverlay />);
 })();

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { Divider, Layout, Typography } from "antd";
 import { Helmet } from "react-helmet";
@@ -40,6 +40,10 @@ const footerStyle = {
   flexShrink: 0,
 };
 function SidePanel() {
+  useEffect(() => {
+    debugger;
+    console.log("here");
+  }, []);
   return (
     <>
       <Helmet>
