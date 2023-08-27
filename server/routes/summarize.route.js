@@ -1,5 +1,11 @@
-const router = require('express').Router();
+const {
+  summarizeContent,
+  summarizeWebpage,
+} = require("../controllers/summarise.controller");
 
-router.post('/',)
+const router = require("express").Router();
 
-exports.module = router
+router.post("/", summarizeContent);
+router.get("/web-page", summarizeWebpage);
+
+module.exports = router;
