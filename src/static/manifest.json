@@ -4,9 +4,10 @@
   "version": "1.0.1",
   "description": "Chrome extension for summarizing web pages",
   "action": {
-    "default_title": "Click to view a popup",
-    "default_popup": "sidepanel.html"
+    "default_title": "Summarizer"
   },
+  "options_page": "options.html",
+
   "side_panel": {
     "default_path": "sidepanel.html"
   },
@@ -17,14 +18,13 @@
     "scripting",
     "tabs"
   ],
-  "options_page": "options.html",
-  "background": {
-    "service_worker": "background.js"
-  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
       "js": ["contentScript.js"]
     }
-  ]
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
 }
