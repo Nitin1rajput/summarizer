@@ -1,32 +1,32 @@
-let lastMessage = null;
-let activeTabId = null;
+(() => {
+  let sidePanelPort = null;
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.message === "textSelected") {
-    lastMessage = request;
-    activeTabId = sender.tab.id;
-    console.log(lastMessage, activeTabId);
-  }
-});
+  chrome.runtime.onInstalled.addListener(() => {
+    chrome.sidePanel
+      .setPanelBehavior({ openPanelOnActionClick: true })
+      .catch((error) => console.error(error));
 
-chrome.tabs.onActivated.addListener((activeInfo) => {
-  activeTabId = activeInfo.tabId;
-});
-chrome.runtime.onConnect.addListener((port) => {
-  if (port.name === "overlay") {
-    console.log(port, "port");
-    port.onMessage.addListener((request) => {
-      if (request.message === "fetchLastMessage") {
-        console.log("sending last message");
-        port.postMessage(lastMessage);
+    chrome.runtime.onConnect.addListener(function (port) {
+      if (port.name === "popup") {
+        sidePanelPort = port;
+        sidePanelPort.onDisconnect.addListener(function () {
+          sidePanelPort = null;
+        });
       }
     });
-
-    chrome.tabs.onUpdated.addListener(function listener(tabId, changeInfo) {
-      if (tabId === activeTabId && changeInfo.status === "complete") {
-        console.log("sending last message");
-        port.postMessage(lastMessage);
-      }
+    chrome.runtime.onMessage.addListener((message, sender) => {
+      (async () => {
+        if (message.from === "openSidepanel") {
+          await chrome.sidePanel.open({ tabId: sender.tab.id });
+        }
+        if (
+          message.from === "selectionOverlay" &&
+          message.subject === "textSelected" &&
+          sidePanelPort
+        ) {
+          popupPort.postMessage({ ...message, from: "background" });
+        }
+      })();
     });
-  }
-});
+  });
+})();
