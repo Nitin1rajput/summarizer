@@ -13,7 +13,10 @@ const { Paragraph } = Typography;
 const ButtonGroup = Button.Group;
 
 const screenSizes = { y: window.innerHeight, x: window.innerWidth };
-
+const constants = {
+  SUMMARY: "SUMMARY",
+  KEY_POINTS: "KEY_POINTS",
+};
 // styles
 const overlayDimensions = {
   width: 250,
@@ -41,72 +44,107 @@ export default function SelectionOverlay({}) {
   const [showSummarize, setShowSummarize] = useState(false);
   const [showBadge, setShowBadge] = useState(true);
   const [selectedText, setSelectedText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [summary, setSummary] = useState([]);
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const sendMessage = async (message) => {
-    await chrome.runtime.sendMessage(message);
-  };
   useEffect(() => {
     document.addEventListener("mouseup", async (e) => {
-      if (e.target.id !== "summarize-app") {
-        const selection = window.getSelection();
-        const text = selection.toString().trim();
+      try {
+        if (e.target.id !== "summarize-app") {
+          const selection = window.getSelection();
+          const text = selection.toString().trim();
 
-        if (text.length > 0) {
-          setShow(true);
-          setSelectedText(text);
-          setShowSummarize(false);
-          const rect = selection.getRangeAt(0).getBoundingClientRect();
-          const relative = document.body.parentNode.getBoundingClientRect();
+          if (text.length > 0) {
+            setShow(true);
+            if (text !== selectedText) {
+              setShowSummarize(false);
+            }
+            setSelectedText(text);
+            const rect = selection.getRangeAt(0).getBoundingClientRect();
+            const relative = document.body.parentNode.getBoundingClientRect();
 
-          let x = rect.right; // right of the selected text from left
-          let y = rect.bottom - relative.top; // bottom of the selected text from top
+            let x = rect.right; // right of the selected text from left
+            let y = rect.bottom - relative.top; // bottom of the selected text from top
 
-          if (screenSizes.x - overlayDimensions.width < x) {
-            x = screenSizes.x - overlayDimensions.width;
+            if (screenSizes.x - overlayDimensions.width < x) {
+              x = screenSizes.x - overlayDimensions.width;
+            }
+            if (screenSizes.y - overlayDimensions.height < rect.y) {
+              y -= overlayDimensions.height;
+            }
+            setPosition({ x, y });
           }
-          if (screenSizes.y - overlayDimensions.height < rect.y) {
-            y -= overlayDimensions.height;
-          }
-          console.log(x, y, "selection");
-          setPosition({ x, y });
           await sendMessage({
             from: "selectionOverlay",
             subject: "textSelected",
             body: text,
           });
         }
+      } catch (error) {
+        console.log(error);
       }
     });
     window.addEventListener("click", (e) => {
-      console.log(e.target.id);
       if (e.target.id === "summarize-overlay") {
         console.log("hiii");
       }
     });
   }, []);
 
-  const handleClickSummarize = async () => {
-    setShowSummarize(true);
-    const rect = window.getSelection().getRangeAt(0).getBoundingClientRect();
-    let x = rect.right; // right of the selected text from left
-    let y = rect.bottom; // bottom of the selected text from top
+  // methods
+  const sendMessage = async (message) => {
+    console.log("sending from overlay");
+    await chrome.runtime.sendMessage(message);
+  };
 
-    if (screenSizes.x - cardLayout.width < x) {
-      x = screenSizes.x - cardLayout.maxHeight - 20;
+  const handleClickSummarize = async (type) => {
+    try {
+      setShowSummarize(true);
+      const rect = window.getSelection().getRangeAt(0).getBoundingClientRect();
+      let x = rect.right; // right of the selected text from left
+      let y = rect.bottom; // bottom of the selected text from top
+
+      if (screenSizes.x - cardLayout.width < x) {
+        x = screenSizes.x - cardLayout.maxHeight - 20;
+      }
+      if (screenSizes.y - cardLayout.maxHeight < y) {
+        y = screenSizes.y - cardLayout.maxHeight - 10;
+      }
+      setPosition({ x, y });
+      // api work
+      setLoading(true);
+      const response = await fetch("http://localhost:3080/summarize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: type,
+          content: selectedText,
+        }),
+      });
+      const data = await response.json();
+      if (data.status === "success") {
+        // doing something
+        setSummary([data.data]);
+      } else {
+        throw new Error(data.message);
+      }
+      setLoading(false);
+    } catch (err) {
+      console.log(err);
     }
-    if (screenSizes.y - cardLayout.maxHeight < y) {
-      y = screenSizes.y - cardLayout.maxHeight - 10;
-    }
-    setPosition({ x, y });
-    await chrome.runtime.sendMessage({
-      from: "selectionOverlay",
-      subject: "textSelected",
-    });
   };
 
   const onCharacterTyped = () =>
     (scrollRef.current.scrollTop = scrollRef.current.scrollHeight);
   // window.onmouseover = (e) => console.log(e.clientX, e.clientY);
+  const openSidepanel = async () => {
+    await sendMessage({
+      from: "selectionOverlay",
+      subject: "openSidepanel",
+    });
+  };
   return (
     <div className="summarize-app" id="summarize-app">
       {show ? (
@@ -123,6 +161,7 @@ export default function SelectionOverlay({}) {
         >
           {showSummarize ? (
             <Card
+              loading={loading}
               className="my-card"
               title={
                 <>
@@ -156,13 +195,7 @@ export default function SelectionOverlay({}) {
                         expandable: false,
                       }}
                     >
-                      Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                      Libero id debitis veritatis sed sit. Laudantium
-                      reprehenderit soluta consectetur beatae, hic amet sequi
-                      quas porro ullam eligendi eveniet inventore tempore saepe
-                      alias repellendus dolorum autem? Exercitationem ipsam cum
-                      consectetur ducimus quas eligendi labore maxime neque
-                      reiciendis, nobis atque inventore eum temporibus.
+                      {selectedText}
                     </Paragraph>
                   </div>
                 </>
@@ -172,12 +205,7 @@ export default function SelectionOverlay({}) {
                 <div className="container overlay-actions">
                   <Button
                     icon={<MessageOutlined />}
-                    onClick={async () =>
-                      sendMessage({
-                        from: "selectionOverlay",
-                        subject: "openSidepanel",
-                      })
-                    }
+                    onClick={() => openSidepanel()}
                     id="continue"
                   >
                     Continue To Sidebar
@@ -188,27 +216,16 @@ export default function SelectionOverlay({}) {
             >
               <div
                 ref={scrollRef}
-                style={{ maxHeight: "150px", overflow: "auto" }}
+                style={{
+                  maxHeight: "150px",
+                  overflow: "auto",
+                  whiteSpace: "pre-line",
+                }}
               >
                 <Typewriter
                   onType={onCharacterTyped}
                   typeSpeed={10}
-                  words={[
-                    `Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-                    Expedita possimus enim esse? Consequatur harum quidem, quam
-                    laudantium dolore iure fugit dolorem temporibus vero eius
-                    officia illum, dicta sed beatae amet dolores doloremque
-                    aperiam maiores. Velit suscipit deleniti neque? Laudantium
-                    tenetur ab delectus illo a aperiam cum, asperiores impedit
-                    nulla debitis quisquam minima, deserunt ullam accusamus
-                    recusandae rerum, quod nesciunt nihil. Quasi quod fugiat
-                    porro nisi pariatur quas expedita, reprehenderit rerum
-                    tempora voluptatem sequi provident placeat. Provident
-                    reiciendis rerum dolor corrupti, quisquam quod. Explicabo,
-                    blanditiis debitis quas fugiat dolorum totam voluptas
-                    officia, commodi voluptatem amet doloremque quod
-                    consectetur, architecto aliquid ex?`,
-                  ]}
+                  words={[`${summary}`]}
                 />
               </div>
             </Card>
@@ -225,8 +242,14 @@ export default function SelectionOverlay({}) {
               }
             >
               <ButtonGroup size="middle">
-                <Button onClick={handleClickSummarize}>Summarize</Button>
-                <Button onClick={handleClickSummarize}>Key Points</Button>
+                <Button onClick={() => handleClickSummarize(constants.SUMMARY)}>
+                  Summarize
+                </Button>
+                <Button
+                  onClick={() => handleClickSummarize(constants.KEY_POINTS)}
+                >
+                  Key Points
+                </Button>
               </ButtonGroup>
             </Badge>
           )}

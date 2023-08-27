@@ -1,8 +1,7 @@
 import React from "react";
-import { RECIEVER, SENDER } from "../constants";
-import { Button, Card, Tooltip } from "antd";
+import { roles } from "../constants";
+import { Card } from "antd";
 import { Typewriter } from "react-simple-typewriter";
-import { CopyOutlined } from "@ant-design/icons";
 
 let boxStyle = {};
 
@@ -32,12 +31,18 @@ const centerBoxStyle = {
   clear: "both",
   color: "grey",
 };
-export default function MessageBox({ message, type, typing = true }) {
-  switch (type) {
-    case SENDER:
+export default function MessageBox({
+  message,
+  role,
+  actions,
+  setGenerating,
+  typing = true,
+}) {
+  switch (role) {
+    case roles.ASSISTANT:
       boxStyle = leftBoxStyle;
       break;
-    case RECIEVER:
+    case roles.USER:
       boxStyle = rightBoxStyle;
       break;
     default:
@@ -45,23 +50,38 @@ export default function MessageBox({ message, type, typing = true }) {
       boxStyle = centerBoxStyle;
       break;
   }
+  let wordCount = 0;
+  const onType = () => {
+    wordCount++;
+    if (wordCount === message.length) {
+      setGenerating(false);
+    }
+  };
   return (
-    <Tooltip
-      placement="rightBottom"
-      title={
-        <Button
-          size="small"
-          type="link"
-          icon={<CopyOutlined style={{ color: "white" }} />}
-        />
-      }
-      arrow={false}
-      color="#777272"
-      overlayInnerStyle={{ zIndex: 0 }}
+    // <Tooltip
+    //   placement="rightBottom"
+    //   title={
+    //     <Button
+    //       size="small"
+    //       role="link"
+    //       icon={<CopyOutlined style={{ color: "white" }} />}
+    //     />
+    //   }
+    //   arrow={false}
+    //   color="#777272"
+    //   overlayInnerStyle={{ zIndex: 0 }}
+    // >
+    <Card
+      style={boxStyle}
+      bodyStyle={{ padding: "10px 15px", whiteSpace: "pre-line" }}
+      actions={actions}
     >
-      <Card style={boxStyle} bodyStyle={{ padding: "10px 15px" }}>
-        {typing ? <Typewriter words={[message]} typeSpeed={10} /> : message}
-      </Card>
-    </Tooltip>
+      {typing ? (
+        <Typewriter words={[message]} typeSpeed={10} onType={onType} />
+      ) : (
+        message
+      )}
+    </Card>
+    // </Tooltip>
   );
 }

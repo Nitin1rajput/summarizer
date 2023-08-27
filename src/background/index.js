@@ -7,7 +7,9 @@
       .catch((error) => console.error(error));
 
     chrome.runtime.onConnect.addListener(function (port) {
-      if (port.name === "popup") {
+      console.log("on connection", port);
+      if (port.name === "sidePanel") {
+        console.log("connecting");
         sidePanelPort = port;
         sidePanelPort.onDisconnect.addListener(function () {
           sidePanelPort = null;
@@ -16,7 +18,11 @@
     });
     chrome.runtime.onMessage.addListener((message, sender) => {
       (async () => {
-        if (message.from === "openSidepanel") {
+        console.log(message, "ng message");
+        if (
+          message.from === "selectionOverlay" &&
+          message.subject === "openSidepanel"
+        ) {
           await chrome.sidePanel.open({ tabId: sender.tab.id });
         }
         if (
@@ -24,7 +30,8 @@
           message.subject === "textSelected" &&
           sidePanelPort
         ) {
-          popupPort.postMessage({ ...message, from: "background" });
+          console.log("sending....", message);
+          sidePanelPort.postMessage({ ...message, from: "background" });
         }
       })();
     });

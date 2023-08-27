@@ -21,11 +21,18 @@ const sendButtonStyle = {
   justifyContent: "center",
   alignItems: "center",
 };
-export default function InputArea() {
+export default function InputArea({ disabled, onSubmit }) {
   const [isHovered, setIsHovered] = useState(false);
+  const [inputText, setInputText] = useState("");
+  const handleSubmit = () => {
+    onSubmit(inputText);
+    setInputText("");
+  };
   return (
     <div className="input-container" style={containerStyle}>
       <Input.TextArea
+        disabled={disabled}
+        value={inputText}
         autoSize={{
           minRows: 2,
           maxRows: 5,
@@ -33,9 +40,10 @@ export default function InputArea() {
         style={inputStyle}
         bordered={false}
         placeholder="Type a message"
+        onChange={(e) => setInputText(e.target.value)}
         onPressEnter={(e) => {
           e.preventDefault();
-          console.log(e, "something");
+          handleSubmit();
         }}
       />
       <div
@@ -54,6 +62,7 @@ export default function InputArea() {
             onMouseLeave={() => setIsHovered(false)}
             type={isHovered ? "primary" : "link"}
             icon={<SendOutlined style={{ color: isHovered ? "white" : "" }} />}
+            onClick={() => handleSubmit()}
           />
         </Tooltip>
       </div>
