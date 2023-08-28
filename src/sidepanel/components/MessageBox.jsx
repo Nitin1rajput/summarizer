@@ -100,6 +100,7 @@ export default function MessageBox({
   };
   return (
     <Tooltip
+      zIndex={0}
       placement="rightBottom"
       title={
         <Button

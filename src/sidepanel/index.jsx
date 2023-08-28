@@ -45,7 +45,7 @@ const footerStyle = {
   display: "flex",
   flexDirection: "column",
   alignItems: "start",
-  zIndex: 10000,
+  zIndex: 10,
 };
 const loadingDiv = {
   padding: "0 0 8px 8px",
