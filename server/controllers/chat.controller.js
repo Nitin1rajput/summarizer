@@ -1,6 +1,6 @@
 const { chatConstants, roles } = require("../constants");
 const openAi = require("../services/open-ai");
-const { checkIfObjectEmpty } = require("../utils");
+const { getOpenAPIErrorMessage } = require("../utils");
 
 exports.askChat = async (req, res) => {
   try {
@@ -25,21 +25,19 @@ exports.askChat = async (req, res) => {
     const response = await openAi.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: promptMessages,
-      temperature: 0.5,
+      temperature: 0.1,
       max_tokens: 100,
     });
 
-    if (response.choices[0].message) {
-      promptMessages.push(response.choices[0].message);
-    }
     res.json({
       status: "success",
-      messages: promptMessages,
+      data: response.choices[0].message,
     });
   } catch (error) {
+    const message = getOpenAPIErrorMessage(error.status);
     res.json({
       status: "failure",
-      message: error.message || "Something Went Wrong",
+      message: message || error.message || "Something Went Wrong",
     });
   }
 };

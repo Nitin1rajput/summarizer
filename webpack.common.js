@@ -1,9 +1,10 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
+const webpack = require("webpack");
+require("dotenv").config();
 
 module.exports = {
-  mode: "development",
   devtool: "cheap-module-source-map",
   entry: {
     sidepanel: path.resolve("src", "sidepanel"),
@@ -51,6 +52,9 @@ module.exports = {
       ],
     }),
     ...getHtmlPlugins(["sidepanel", "options"]),
+    new webpack.DefinePlugin({
+      "process.env": JSON.stringify(process.env),
+    }),
   ],
   optimization: {
     splitChunks: {

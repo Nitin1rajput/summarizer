@@ -5,7 +5,7 @@ import { createRoot } from "react-dom/client";
 function Options() {
   return (
     <Card title="Hello World">
-      <h1>This is options page</h1>
+      <h1>This is options page, we will provide mode features soon</h1>
     </Card>
   );
 }
