@@ -1,7 +1,7 @@
 const {
   summarizeContent,
   summarizeWebpage,
-} = require("../controllers/summarise.controller");
+} = require("../controllers/summarize.controller");
 
 const router = require("express").Router();
 

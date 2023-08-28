@@ -9,7 +9,7 @@ exports.summarizeContent = async (req, res) => {
       prompt = [
         {
           role: "system",
-          content: "Give me 5 majorPoints for the provide content",
+          content: "Give me 5 major points for the provide content",
         },
       ];
     } else {

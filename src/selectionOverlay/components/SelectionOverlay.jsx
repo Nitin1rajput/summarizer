@@ -1,6 +1,7 @@
 import { Badge, Button, Card, Typography, message } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  CheckCircleOutlined,
   CloseCircleFilled,
   CloseOutlined,
   CopyOutlined,
@@ -47,7 +48,9 @@ export default function SelectionOverlay({}) {
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState([]);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isCopied, setIsCopied] = useState(false)
   useEffect(() => {
+
     document.addEventListener("mouseup", async (e) => {
       try {
         if (e.target.id !== "summarize-app") {
@@ -56,10 +59,12 @@ export default function SelectionOverlay({}) {
 
           if (text.length > 0) {
             setShow(true);
-            if (text !== selectedText) {
-              setShowSummarize(false);
-            }
-            setSelectedText(text);
+            setSelectedText(prevText => {
+              if (text !== prevText) {
+                setShowSummarize(false);
+              }
+              return text
+            });
             const rect = selection.getRangeAt(0).getBoundingClientRect();
             const relative = document.body.parentNode.getBoundingClientRect();
 
@@ -84,19 +89,21 @@ export default function SelectionOverlay({}) {
         console.log(error);
       }
     });
-    window.addEventListener("click", (e) => {
-      if (e.target.id === "summarize-overlay") {
-        console.log("hiii");
-      }
-    });
   }, []);
 
   // methods
+  const clearSelection = () => {
+    if (window.getSelection) { window.getSelection().removeAllRanges(); }
+    else if (document.selection) { document.selection.empty(); }
+  }
+
   const sendMessage = async (message) => {
     console.log("sending from overlay");
     await chrome.runtime.sendMessage(message);
   };
-
+  const countWords = (str) => {
+    return str.trim().split(/\s+/).length;
+  }
   const handleClickSummarize = async (type) => {
     try {
       setShowSummarize(true);
@@ -113,38 +120,56 @@ export default function SelectionOverlay({}) {
       setPosition({ x, y });
       // api work
       setLoading(true);
-      const response = await fetch("http://localhost:3080/summarize", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          type: type,
-          content: selectedText,
-        }),
-      });
-      const data = await response.json();
-      if (data.status === "success") {
-        // doing something
-        setSummary([data.data]);
+      if (countWords(selectedText) > 2) {
+
+        const response = await fetch("http://localhost:3080/summarize", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            type: type,
+            content: selectedText,
+          }),
+        });
+        const data = await response.json();
+        if (data.status === "success") {
+          // doing something
+          setSummary([data.data]);
+        } else {
+          throw new Error(data.message);
+        }
       } else {
-        throw new Error(data.message);
+        setSummary('Content is too short to summarize')
       }
       setLoading(false);
+      clearSelection()
     } catch (err) {
       console.log(err);
     }
   };
 
-  const onCharacterTyped = () =>
-    (scrollRef.current.scrollTop = scrollRef.current.scrollHeight);
-  // window.onmouseover = (e) => console.log(e.clientX, e.clientY);
   const openSidepanel = async () => {
     await sendMessage({
       from: "selectionOverlay",
       subject: "openSidepanel",
     });
+    await sendMessage({
+      from: "selectionOverlay",
+      subject: "textSelected",
+      body: selectedText,
+    });
   };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(selectedText);
+    setIsCopied(true)
+    const timeout = setTimeout(() => {
+      console.log('doing');
+      setIsCopied(false)
+    }, 2000)
+    return () => clearTimeout(timeout)
+  }
   return (
     <div className="summarize-app" id="summarize-app">
       {show ? (
@@ -210,7 +235,7 @@ export default function SelectionOverlay({}) {
                   >
                     Continue To Sidebar
                   </Button>
-                  ,<Button icon={<CopyOutlined />}>Copy</Button>
+                  ,<Button onClick={handleCopy} icon={isCopied ? <CheckCircleOutlined /> : <CopyOutlined />}>{isCopied ? 'Copied' : 'Copy'}</Button>
                 </div>,
               ]}
             >
@@ -223,7 +248,6 @@ export default function SelectionOverlay({}) {
                 }}
               >
                 <Typewriter
-                  onType={onCharacterTyped}
                   typeSpeed={10}
                   words={[`${summary}`]}
                 />

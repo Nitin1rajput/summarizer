@@ -37,6 +37,7 @@ export default function MessageBox({
   actions,
   setGenerating,
   typing = true,
+  ...porps
 }) {
   switch (role) {
     case roles.ASSISTANT:
@@ -55,6 +56,7 @@ export default function MessageBox({
     wordCount++;
     if (wordCount === message.length) {
       setGenerating(false);
+      props.onType()
     }
   };
   return (

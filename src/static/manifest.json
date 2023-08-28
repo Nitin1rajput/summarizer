@@ -7,7 +7,6 @@
     "default_title": "Summarizer"
   },
   "options_page": "options.html",
-
   "side_panel": {
     "default_path": "sidepanel.html"
   },
@@ -15,7 +14,6 @@
     "sidePanel",
     "contextMenus",
     "activeTab",
-    "scripting",
     "tabs"
   ],
   "content_scripts": [
@@ -27,4 +25,5 @@
   "background": {
     "service_worker": "background.js"
   }
+  
 }

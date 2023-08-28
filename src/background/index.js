@@ -1,7 +1,11 @@
 (() => {
   let sidePanelPort = null;
 
+  // self.addEventListener('activate', event => {
+  //   event.waitUntil(self.clients.claim());
+  // });
   chrome.runtime.onInstalled.addListener(() => {
+
     chrome.sidePanel
       .setPanelBehavior({ openPanelOnActionClick: true })
       .catch((error) => console.error(error));
@@ -23,7 +27,8 @@
           message.from === "selectionOverlay" &&
           message.subject === "openSidepanel"
         ) {
-          await chrome.sidePanel.open({ tabId: sender.tab.id });
+          // await chrome.sidePanel.open({ tabId: sender.tab.id });
+          chrome.windows.getCurrent(window => chrome.sidePanel.open({ windowId: window.id }))
         }
         if (
           message.from === "selectionOverlay" &&

@@ -1,30 +1,26 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import MessageBox from "./MessageBox";
-import { RECIEVER, SENDER, roles, summarizeType } from "../constants";
+import { roles, summarizeType } from "../constants";
 import { Button, Space } from "antd";
 
-export default function ContentArea({ messages, onSubmit, setGenerating }) {
-  // need to add logic for getting chats
-
-  const [selectedText, setSelectedText] = useState("");
-
-  useEffect(() => {
-    const port = chrome.runtime.connect({ name: "sidePanel" });
-
-    port.onMessage.addListener((msg) => {
-      if (msg.from === "background" && msg.subject === "textSelected") {
-        setSelectedText(msg.body);
-      }
-    });
-  }, []);
-
+export default function ContentArea({ selectedText, messages, onSubmit, setGenerating }) {
+  // refs
+  const scrollRef = useRef();
+  // methods
   const handleActions = (type) => {
     onSubmit({
       type,
       selectedText,
     });
   };
-  let count = 0;
+  const onCharacterTyped = () => {
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
+
+  };
+  // effects
+  useEffect(() => {
+    onCharacterTyped();
+  }, [messages, selectedText]);
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
@@ -39,10 +35,12 @@ export default function ContentArea({ messages, onSubmit, setGenerating }) {
           typing={message.typing}
           role={message.role}
           setGenerating={setGenerating}
+          onType={onCharacterTyped}
         />
       ))}
       {selectedText.length ? (
         <MessageBox
+          onType={onCharacterTyped}
           message={selectedText}
           role={roles.ASSISTANT}
           typing={false}
@@ -58,6 +56,7 @@ export default function ContentArea({ messages, onSubmit, setGenerating }) {
       ) : (
         ""
       )}
+      <div ref={scrollRef}></div>
     </Space>
   );
 }

@@ -1,4 +1,4 @@
-import { SendOutlined } from "@ant-design/icons";
+import { ClearOutlined, SendOutlined } from "@ant-design/icons";
 import { Button, Input, Tooltip } from "antd";
 import React, { useState } from "react";
 import "../styles/input-area.css";
@@ -21,8 +21,11 @@ const sendButtonStyle = {
   justifyContent: "center",
   alignItems: "center",
 };
-export default function InputArea({ disabled, onSubmit }) {
-  const [isHovered, setIsHovered] = useState(false);
+export default function InputArea({ disabled, onSubmit, handleSummarizeWeb }) {
+  const [isHovered, setIsHovered] = useState({
+    send: false,
+    summary: false
+  });
   const [inputText, setInputText] = useState("");
   const handleSubmit = () => {
     onSubmit(inputText);
@@ -31,6 +34,7 @@ export default function InputArea({ disabled, onSubmit }) {
   return (
     <div className="input-container" style={containerStyle}>
       <Input.TextArea
+        autoFocus
         disabled={disabled}
         value={inputText}
         autoSize={{
@@ -49,19 +53,32 @@ export default function InputArea({ disabled, onSubmit }) {
       <div
         style={{
           display: "flex",
-          justifyContent: "end",
+          justifyContent: "space-between",
         }}
       >
+        <Tooltip title="Summarize Web">
+          <Button
+            style={{
+              ...sendButtonStyle,
+              background: isHovered.summary ? "#504099" : "#fff",
+            }}
+            onMouseEnter={() => setIsHovered(prev => ({ ...prev, summary: true }))}
+            onMouseLeave={() => setIsHovered(prev => ({ ...prev, summary: false }))}
+            type={isHovered.summary ? "primary" : "link"}
+            icon={<ClearOutlined style={{ color: isHovered.summary ? "white" : "" }} />}
+            onClick={() => handleSummarizeWeb()}
+          />
+        </Tooltip>
         <Tooltip title="Send">
           <Button
             style={{
               ...sendButtonStyle,
-              background: isHovered ? "#504099" : "#fff",
+              background: isHovered.send ? "#504099" : "#fff",
             }}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            type={isHovered ? "primary" : "link"}
-            icon={<SendOutlined style={{ color: isHovered ? "white" : "" }} />}
+            onMouseEnter={() => setIsHovered(prev => ({ ...prev, send: true }))}
+            onMouseLeave={() => setIsHovered(prev => ({ ...prev, send: true }))}
+            type={isHovered.send ? "primary" : "link"}
+            icon={<SendOutlined style={{ color: isHovered.send ? "white" : "" }} />}
             onClick={() => handleSubmit()}
           />
         </Tooltip>

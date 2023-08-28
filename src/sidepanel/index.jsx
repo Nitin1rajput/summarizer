@@ -50,6 +50,29 @@ const loadingDiv = {
 function SidePanel() {
   const [generating, setGenerating] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [selectedText, setSelectedText] = useState("");
+
+  useEffect(() => {
+    (async () => {
+
+      const port = chrome.runtime.connect({ name: "sidePanel" });
+
+      port.onMessage.addListener((msg) => {
+        if (msg.from === "background" && msg.subject === "textSelected") {
+          setSelectedText(msg.body);
+        }
+      })
+    })()
+  }, []);
+  const handleSummarizeWeb = async () => {
+    try {
+      const [tab] = await chrome.tab.query({ currentWindow: true, active: true });
+      const url = tab.url;
+
+    } catch (error) {
+
+    }
+  }
   const handleActionsSubmit = async ({ type, selectedText }) => {
     try {
       const content = selectedText;
@@ -80,7 +103,6 @@ function SidePanel() {
       } else {
         throw new Error(data.message);
       }
-      setGenerating(false);
     } catch (error) {
       console.log(error);
     }
@@ -155,6 +177,7 @@ function SidePanel() {
             messages={messages}
             onSubmit={handleActionsSubmit}
             setGenerating={setGenerating}
+            selectedText={selectedText}
           />
         </Content>
         <Footer style={footerStyle}>
@@ -176,7 +199,7 @@ function SidePanel() {
             ""
           )}
 
-          <InputArea disabled={generating} onSubmit={onSubmit} />
+          <InputArea disabled={generating} onSubmit={onSubmit} setMessages={setMessages} />
         </Footer>
       </Layout>
     </>
