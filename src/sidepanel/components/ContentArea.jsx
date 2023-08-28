@@ -3,7 +3,14 @@ import MessageBox from "./MessageBox";
 import { roles, summarizeType } from "../constants";
 import { Button, Space } from "antd";
 
-export default function ContentArea({ selectedText, messages, onSubmit, setGenerating }) {
+export default function ContentArea({
+  selectedText,
+  messages,
+  onSubmit,
+  setGenerating,
+  loading,
+  error,
+}) {
   // refs
   const scrollRef = useRef();
   // methods
@@ -14,8 +21,7 @@ export default function ContentArea({ selectedText, messages, onSubmit, setGener
     });
   };
   const onCharacterTyped = () => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
-
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   };
   // effects
   useEffect(() => {
@@ -30,16 +36,18 @@ export default function ContentArea({ selectedText, messages, onSubmit, setGener
       />
       {messages.map((message, idx) => (
         <MessageBox
+          loading={loading}
           key={idx}
-          message={message.content}
-          typing={message.typing}
-          role={message.role}
+          message={message?.content}
+          typing={message?.typing}
+          role={message?.role}
           setGenerating={setGenerating}
           onType={onCharacterTyped}
         />
       ))}
-      {selectedText.length ? (
+      {selectedText?.length ? (
         <MessageBox
+          loading={loading}
           onType={onCharacterTyped}
           message={selectedText}
           role={roles.ASSISTANT}
@@ -52,6 +60,16 @@ export default function ContentArea({ selectedText, messages, onSubmit, setGener
               Key Points
             </Button>,
           ]}
+        />
+      ) : (
+        ""
+      )}
+      {error?.length ? (
+        <MessageBox
+          loading={loading}
+          message={error}
+          role={roles.ERROR}
+          typing={false}
         />
       ) : (
         ""

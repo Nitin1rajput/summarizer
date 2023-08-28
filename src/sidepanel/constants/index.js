@@ -1,10 +1,8 @@
-export const SENDER = "SENDER";
-export const RECIEVER = "RECIEVER";
-
 export const roles = {
   SYSTEM: "system",
   USER: "user",
   ASSISTANT: "assistant",
+  ERROR: "ERROR",
 };
 
 export const summarizeType = {

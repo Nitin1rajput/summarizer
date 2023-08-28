@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { roles } from "../constants";
-import { Card } from "antd";
+import { Button, Card, Tooltip } from "antd";
 import { Typewriter } from "react-simple-typewriter";
+import { CheckCircleOutlined, CopyOutlined } from "@ant-design/icons";
 
 let boxStyle = {};
 
@@ -31,14 +32,25 @@ const centerBoxStyle = {
   clear: "both",
   color: "grey",
 };
+const errorBoxStyle = {
+  margin: "auto",
+  width: "60%",
+  clear: "both",
+  color: "red",
+  border: "1px dashed red",
+  borderRadius: "12px",
+};
 export default function MessageBox({
   message,
   role,
   actions,
   setGenerating,
+  loading,
   typing = true,
-  ...porps
 }) {
+  const [speed, setSpeed] = useState(10);
+  const [isCopied, setIsCopied] = useState(false);
+
   switch (role) {
     case roles.ASSISTANT:
       boxStyle = leftBoxStyle;
@@ -46,44 +58,76 @@ export default function MessageBox({
     case roles.USER:
       boxStyle = rightBoxStyle;
       break;
+    case roles.ERROR:
+      boxStyle = errorBoxStyle;
+      break;
     default:
       //center
       boxStyle = centerBoxStyle;
       break;
   }
+
+  // methods
   let wordCount = 0;
   const onType = () => {
     wordCount++;
     if (wordCount === message.length) {
       setGenerating(false);
-      props.onType()
     }
   };
+  const stopAnimation = () => {
+    setSpeed(0);
+    setGenerating(false);
+  };
+  useEffect(() => {
+    window.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key === "Escape" && !loading) {
+          stopAnimation();
+        }
+      },
+      true
+    );
+  }, []);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(message);
+    setIsCopied(true);
+    const timeout = setTimeout(() => {
+      setIsCopied(false);
+    }, 2000);
+    return () => clearTimeout(timeout);
+  };
   return (
-    // <Tooltip
-    //   placement="rightBottom"
-    //   title={
-    //     <Button
-    //       size="small"
-    //       role="link"
-    //       icon={<CopyOutlined style={{ color: "white" }} />}
-    //     />
-    //   }
-    //   arrow={false}
-    //   color="#777272"
-    //   overlayInnerStyle={{ zIndex: 0 }}
-    // >
-    <Card
-      style={boxStyle}
-      bodyStyle={{ padding: "10px 15px", whiteSpace: "pre-line" }}
-      actions={actions}
+    <Tooltip
+      placement="rightBottom"
+      title={
+        <Button
+          onClick={() => handleCopy()}
+          size="small"
+          type="link"
+          icon={
+            isCopied ? (
+              <CheckCircleOutlined style={{ color: "#fff" }} />
+            ) : (
+              <CopyOutlined style={{ color: "#fff" }} />
+            )
+          }
+        />
+      }
+      arrow={false}
     >
-      {typing ? (
-        <Typewriter words={[message]} typeSpeed={10} onType={onType} />
-      ) : (
-        message
-      )}
-    </Card>
-    // </Tooltip>
+      <Card
+        style={boxStyle}
+        bodyStyle={{ padding: "10px 15px", whiteSpace: "pre-line" }}
+        actions={actions}
+      >
+        {typing ? (
+          <Typewriter words={[message]} typeSpeed={speed} onType={onType} />
+        ) : (
+          message
+        )}
+      </Card>
+    </Tooltip>
   );
 }

@@ -1,5 +1,7 @@
+const { default: puppeteer } = require("puppeteer");
 const { summarizeConstants } = require("../constants");
 const openAi = require("../services/open-ai");
+const { getOpenAPIErrorMessage } = require("../utils");
 
 exports.summarizeContent = async (req, res) => {
   try {
@@ -29,24 +31,21 @@ exports.summarizeContent = async (req, res) => {
     } else {
       throw new Error("Please provide valid content");
     }
-    // const response = await openAi.chat.completions.create({
-    //   model: "gpt-3.5-turbo",
-    //   messages: prompt,
-    //   temperature: 0.5,
-    //   max_tokens: 1024,
-    // });
-    // res.json({
-    //     status: 'success',
-    //     data: response.choices[0].message
-    // })
+    const response = await openAi.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: prompt,
+      temperature: 0.5,
+      max_tokens: 1024,
+    });
     res.json({
       status: "success",
-      data: "1. Node.js is an open-source and cross-platform JavaScript runtime environment that allows developers to run JavaScript code outside of the browser.\n\n2. Node.js runs on the V8 JavaScript engine, which is the same engine used by Google Chrome, making it highly performant.\n\n3. Node.js uses a single process to handle multiple requests, avoiding the need to create new threads for each request. This allows it to handle thousands of concurrent connections without the burden of managing thread concurrency.\n\n4. Node.js provides asynchronous I/O primitives in its standard library, allowing JavaScript code to run non-blocking and preventing blocking behavior from becoming the norm.\n\n5. Node.js allows frontend developers who are already familiar with JavaScript to write server-side code, eliminating the need to learn a different language. It also allows the use of new ECMAScript standards without waiting for browser updates, giving developers more control over the language features they can use.",
+      data: response.choices[0].message,
     });
   } catch (err) {
+    const message = getOpenAPIErrorMessage(err.status);
     res.json({
       status: "failure",
-      message: err.message || "Something Went Wrong!",
+      message: message || err.message || "Something Went Wrong!",
     });
   }
 };
@@ -62,12 +61,29 @@ exports.summarizeWebpage = async (req, res) => {
     } else {
       throw new Error("Please provide an url");
     }
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+
+    await page.goto(url);
+
+    await page.waitForSelector("body");
+
+    const data = await page.evaluate(() => {
+      let content = document.body.innerText;
+      return {
+        content,
+      };
+    });
+
+    await browser.close();
+
     const response = await openAi.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
         {
           role: "system",
-          content: `Summarize this webpage in max of 500 words: ${url}`,
+          content: `Summarize this webpage in max of 200 words: ${data.content}`,
         },
       ],
       temperature: 0.5,
@@ -79,9 +95,10 @@ exports.summarizeWebpage = async (req, res) => {
       data: response.choices[0].message,
     });
   } catch (error) {
+    const message = getOpenAPIErrorMessage(error.status);
     res.json({
       status: "failure",
-      message: error.message || "Something Went Wrong",
+      message: message || err.message || "Something Went Wrong!",
     });
   }
 };
