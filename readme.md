@@ -39,6 +39,6 @@ To run the project on your local machine, follow these steps:
 
 ## Usage Instructions
 
-Insert gifs or other instructions on how to use the extension here.
+Link for the video -> [demo](https://drive.google.com/file/d/1FI4Alh_5PmLUv9xv5WpCVFvwzSacFy4N/view?usp=sharing)
 
 Please note that as this is a Chrome extension, it can only be used in the Google Chrome browser. To use the extension on a page, navigate to the page and click on the Summarizer icon in your extensions toolbar.
